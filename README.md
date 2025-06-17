@@ -4,21 +4,22 @@ This Python script helps you automatically download **open access PDFs** for a l
 
 ## 🚀 Features
 
-* Fetches OA PDF URLs via the Unpaywall API
-* Downloads PDFs and saves them locally
-* Handles errors gracefully
-* Avoids duplicate downloads
-* Rate-limited to respect API policies
+- Fetches OA PDF URLs via the Unpaywall API
+- Downloads PDFs and saves them locally
+- Handles errors gracefully
+- Avoids duplicate downloads
+- Rate-limited to respect API policies
 
 ## 🛠️ Requirements
 
-* Python 3.x
-* `requests`, `pandas`
+- Python 3.x
+- `requests`, `pandas`
   Install dependencies:
 
   ```
   pip install requests pandas
   ```
+
 ## 📂 Project Structure
 
 ```
@@ -50,9 +51,9 @@ This Python script helps you automatically download **open access PDFs** for a l
 
 ## 📌 Notes
 
-* The script uses `doi.replace("/", "_")` to ensure valid filenames.
-* A 1-second delay between requests helps you stay compliant with API usage limits.
-* Only works for **open access** papers.
+- The script uses `doi.replace("/", "_")` to ensure valid filenames.
+- A 1-second delay between requests helps you stay compliant with API usage limits.
+- Only works for **open access** papers.
 
 ---
 
@@ -64,4 +65,4 @@ This script uses the [Unpaywall API](https://unpaywall.org/products/api), which 
 
 ## 📧 Contact
 
-Created by Hazeeb – feel free to reach out for questions or improvements! 
+Created by Hazeeb – feel free to reach out for questions or improvements!
