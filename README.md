@@ -1,4 +1,4 @@
-# 📄 REF Paper PDF Downloader
+# 📄 REF Paper PDF Downloader and other useful tools
 
 This Python script helps you automatically download **open access PDFs** for a list of DOIs using the [Unpaywall API](https://unpaywall.org/products/api). It's particularly useful for research projects like the **Research Excellence Framework (REF)** where you need full-text academic outputs.
 
@@ -9,6 +9,8 @@ This Python script helps you automatically download **open access PDFs** for a l
 - Handles errors gracefully
 - Avoids duplicate downloads
 - Rate-limited to respect API policies
+- Matches pdf to DOIS
+- 
 
 ## 🛠️ Requirements
 
