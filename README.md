@@ -10,7 +10,7 @@ This Python script helps you automatically download **open access PDFs** for a l
 - Avoids duplicate downloads
 - Rate-limited to respect API policies
 - Matches pdf to DOIS
-- 
+- Merge json files together
 
 ## 🛠️ Requirements
 
