@@ -12,6 +12,7 @@ This Python script helps you automatically download **open access PDFs** for a l
 - Matches pdf to DOIS
 - Merge json files together
 - Clean json files
+- Count number of samples in json file
 
 ## 🛠️ Requirements
 
