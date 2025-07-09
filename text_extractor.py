@@ -7,10 +7,10 @@ import fitz  # PyMuPDF
 import os
 
 # Config
-INPUT_CSV = "DOI___Star_Ratings_for_UoA_20.csv"
+INPUT_CSV = "DOI___Star_Ratings_for_UoA_20.csv" #example, replace with actual filename
 OUTPUT_DIR = Path("uoa20_texts")
-LOG_CSV = "uoa20_extraction_log.csv"
-UNPAYWALL_EMAIL = "halabi@uel.ac.uk"  # Replace with your actual email
+LOG_CSV = "uoa20_extraction_log.csv" #example, replace with actual filename
+UNPAYWALL_EMAIL = ""  # Replace with your actual email
 
 OUTPUT_DIR.mkdir(exist_ok=True)
 
