@@ -13,6 +13,7 @@ This Python script helps you automatically download **open access PDFs** for a l
 - Merge json files together
 - Clean json files
 - Count number of samples in json file
+- Extarct text from pdfs and keep track of status either success or failed
 
 ## 🛠️ Requirements
 
