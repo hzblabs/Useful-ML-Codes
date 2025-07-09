@@ -1,4 +1,3 @@
-
 import pandas as pd
 from pathlib import Path
 import requests
@@ -7,10 +6,14 @@ import fitz  # PyMuPDF
 import os
 
 # Config
-INPUT_CSV = "DOI___Star_Ratings_for_UoA_20.csv" #example, replace with actual filename
-OUTPUT_DIR = Path("uoa20_texts")
-LOG_CSV = "uoa20_extraction_log.csv" #example, replace with actual filename
-UNPAYWALL_EMAIL = ""  # Replace with your actual email
+INPUT_CSV = "DOI___Star_Ratings_for_UoA_4.csv"  
+OUTPUT_DIR = Path("uoa4_texts")
+LOG_CSV = "uoa4_extraction_log.csv"
+UNPAYWALL_EMAIL = "halabi@uel.ac.uk"  
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+}
+RETRY_LIMIT = 2
 
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -19,33 +22,44 @@ df = pd.read_csv(INPUT_CSV)
 log = []
 
 def get_pdf_url_from_unpaywall(doi):
-    print(f"🔍 Looking up Unpaywall for DOI: {doi}")
-    api_url = f"https://api.unpaywall.org/v2/{doi}?email={UNPAYWALL_EMAIL}"
-    response = requests.get(api_url, timeout=10)
-    if response.status_code != 200:
-        return None, f"Unpaywall error {response.status_code}"
-    data = response.json()
-    pdf_url = data.get("best_oa_location", {}).get("url_for_pdf")
-    return pdf_url, None if pdf_url else "No OA PDF"
+    print(f"🔍 Checking Unpaywall for DOI: {doi}")
+    url = f"https://api.unpaywall.org/v2/{doi}?email={UNPAYWALL_EMAIL}"
+    try:
+        response = requests.get(url, timeout=15, headers=HEADERS)
+        if response.status_code != 200:
+            return None, f"Unpaywall error {response.status_code}"
+        data = response.json()
+        pdf_url = data.get("best_oa_location", {}).get("url_for_pdf")
+        return pdf_url, None if pdf_url else "No OA PDF"
+    except Exception as e:
+        return None, f"Unpaywall exception: {e}"
 
 def download_pdf(pdf_url, filename):
-    print(f"📥 Downloading PDF from: {pdf_url}")
-    r = requests.get(pdf_url, stream=True, timeout=15)
-    if r.status_code == 200:
-        with open(filename, 'wb') as f:
-            f.write(r.content)
-        print(f"✅ PDF saved as: {filename}")
-        return True, None
-    else:
-        return False, f"Download failed: {r.status_code}"
+    for attempt in range(RETRY_LIMIT):
+        try:
+            r = requests.get(pdf_url, stream=True, timeout=20, headers=HEADERS)
+            if r.status_code == 200:
+                with open(filename, 'wb') as f:
+                    f.write(r.content)
+                print(f"✅ PDF downloaded: {filename}")
+                return True, None
+            else:
+                print(f"⚠️ Attempt {attempt+1} failed: {r.status_code}")
+        except Exception as e:
+            print(f"⚠️ Attempt {attempt+1} exception: {e}")
+        time.sleep(2)
+    return False, f"Download failed after {RETRY_LIMIT} attempts"
 
 def extract_text_from_pdf(pdf_path):
-    print(f"📄 Extracting text from: {pdf_path}")
-    doc = fitz.open(pdf_path)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return text
+    try:
+        doc = fitz.open(pdf_path)
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        return text
+    except Exception as e:
+        print(f"❌ Extraction error: {e}")
+        return ""
 
 for idx, row in df.iterrows():
     doi = row['DOI']
@@ -54,44 +68,39 @@ for idx, row in df.iterrows():
     out_path = OUTPUT_DIR / f"{safe_name}.txt"
     temp_pdf = f"temp_{safe_name}.pdf"
 
-    print(f"\n[{idx+1}/{len(df)}] Processing: {doi}")
+    print(f"\n[{idx+1}/{len(df)}] Processing DOI: {doi}")
 
     if out_path.exists():
         print("⚠️ Already exists. Skipping.")
         log.append([doi, "✅ success", "", star])
         continue
 
-    try:
-        pdf_url, error = get_pdf_url_from_unpaywall(doi)
-        if not pdf_url:
-            print(f"❌ Failed to find PDF: {error}")
-            log.append([doi, "❌ failed", error, star])
-            continue
+    pdf_url, error = get_pdf_url_from_unpaywall(doi)
+    if not pdf_url:
+        print(f"❌ No PDF URL: {error}")
+        log.append([doi, "❌ failed", error, star])
+        continue
 
-        success, reason = download_pdf(pdf_url, temp_pdf)
-        if not success:
-            print(f"❌ Download error: {reason}")
-            log.append([doi, "❌ failed", reason, star])
-            continue
+    success, reason = download_pdf(pdf_url, temp_pdf)
+    if not success:
+        print(f"❌ PDF download failed: {reason}")
+        log.append([doi, "❌ failed", reason, star])
+        continue
 
-        text = extract_text_from_pdf(temp_pdf)
-        if not text.strip():
-            print("❌ Extracted text is empty.")
-            log.append([doi, "❌ failed", "Empty text", star])
-        else:
-            out_path.write_text(text, encoding='utf-8')
-            print(f"💾 Text saved to: {out_path.name}")
-            log.append([doi, "✅ success", "", star])
+    text = extract_text_from_pdf(temp_pdf)
+    if not text.strip():
+        print("❌ Extracted text is empty.")
+        log.append([doi, "❌ failed", "Empty text", star])
+    else:
+        out_path.write_text(text, encoding='utf-8')
+        print(f"💾 Text saved to: {out_path.name}")
+        log.append([doi, "✅ success", "", star])
 
-    except Exception as e:
-        print(f"❌ Exception occurred: {e}")
-        log.append([doi, "❌ failed", str(e), star])
-    finally:
-        if os.path.exists(temp_pdf):
-            os.remove(temp_pdf)
-        time.sleep(1)  # Rate limit
+    if os.path.exists(temp_pdf):
+        os.remove(temp_pdf)
+
+    time.sleep(1)  # Respect API rate limits
 
 # Save log
-log_df = pd.DataFrame(log, columns=["DOI", "Status", "Reason", "Assigned Star"])
-log_df.to_csv(LOG_CSV, index=False)
-print("\n✅ Extraction completed. See log for details.")
+pd.DataFrame(log, columns=["DOI", "Status", "Reason", "Assigned Star"]).to_csv(LOG_CSV, index=False)
+print("\n✅ Extraction process complete. See log for details.")
