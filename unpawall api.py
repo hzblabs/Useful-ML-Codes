@@ -9,7 +9,7 @@ import os
 INPUT_CSV = "DOI___Star_Ratings_for_UoA_4.csv"  
 OUTPUT_DIR = Path("uoa4_texts")
 LOG_CSV = "uoa4_extraction_log.csv"
-UNPAYWALL_EMAIL = "halabi@uel.ac.uk"  
+UNPAYWALL_EMAIL = ""  
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 }
