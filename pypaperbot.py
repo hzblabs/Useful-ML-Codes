@@ -5,7 +5,7 @@ import undetected_chromedriver as uc
 from selenium.common.exceptions import TimeoutException
 
 # -------- CONFIG --------
-DOI_FILE = "doi.txt"
+DOI_FILE = "doi.txt"   # Change to the name of your doi file
 OUTPUT_DIR = "./pdfs"
 LOG_FILE = "scihub_log.csv"
 MIRRORS = [
